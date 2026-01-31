@@ -1,7 +1,9 @@
 package io.giantgyu.securecapita.repository.implementation;
 
+import io.giantgyu.securecapita.domain.Role;
 import io.giantgyu.securecapita.domain.User;
 import io.giantgyu.securecapita.exception.ApiException;
+import io.giantgyu.securecapita.repository.RoleRepository;
 import io.giantgyu.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.giantgyu.securecapita.enumeration.RoleType.ROLE_USER;
 import static io.giantgyu.securecapita.query.UserQuery.*;
 import static java.util.Objects.requireNonNull;
 
@@ -26,7 +29,8 @@ import static java.util.Objects.requireNonNull;
 @Slf4j
 public class UserRepositoryImpl implements UserRepository<User> {
 
-    public final NamedParameterJdbcTemplate jdbc;
+    private final NamedParameterJdbcTemplate jdbc;
+    private final RoleRepository<Role> roleRepository;
 
     @Override
     public User create(User user) {
@@ -39,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository<User> {
             SqlParameterSource parameters = getSqlParameterSource(user);
             jdbc.update(INSERT_USER_QUERY, parameters, holder);
             user.setId(requireNonNull(holder.getKey()).longValue());
-            roleRepository.addRoleToUser(user.getId(), ROLE_USER.name);
+            roleRepository.addRoleToUser(user.getId(), ROLE_USER.name());
         } catch (EmptyResultDataAccessException exception) {
 
         } catch (Exception exception) {
