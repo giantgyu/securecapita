@@ -1,6 +1,7 @@
 package io.giantgyu.securecapita.repository.implementation;
 
 import io.giantgyu.securecapita.domain.User;
+import io.giantgyu.securecapita.exception.ApiException;
 import io.giantgyu.securecapita.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,21 +10,23 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class UserRepositoryImpl implements UserRepository<User> {
-
-    private final NamedParameterJdbcTemplate jdbc;
+    private static final String COUNT_USER_EMAIL_QUERY = "";
+    public final NamedParameterJdbcTemplate jdbc;
 
     @Override
     public User create(User user) {
-
-        if(getEmailCount(user.getEmail()))
-
+        //Check if email is unique
+        //メールの重複チェック
+        if (getEmailCount(user.getEmail().trim().toLowerCase())>0) throw new ApiException("Email already in use. Please use a different email and try again.");
         return null;
     }
+
 
     @Override
     public Collection<User> list(int page, int pageSize) {
@@ -44,4 +47,9 @@ public class UserRepositoryImpl implements UserRepository<User> {
     public Boolean delete(Long id) {
         return null;
     }
+
+    private int getEmailCount(String email) {
+        return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, Map.of("email", email), Integer.class);
+    }
+
 }
